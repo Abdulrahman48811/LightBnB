@@ -1,15 +1,13 @@
 const properties = require('./json/properties.json');
 const users = require('./json/users.json');
-const getUserWithEmail = function (email) {};
-const getUserWithId = function (id) {};
-const addUser = function (user) {};
+
 const { Pool } = require('pg');
 
 const pool = new Pool({
   user: 'vagrant',
   password: '123',
   host: 'localhost',
-  // database: 'light_bnb_db'
+  database: 'lightbnb'
 });
 /// Users
 
@@ -85,8 +83,18 @@ exports.addUser = addUser;
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function(guest_id, limit = 10) {
-  return getAllProperties(null, 2);
-}
+  return pool
+    .query(`SELECT * FROM reservations WHERE guest_id = $1 AND end_date > Now() LIMIT $2;`, [ guest_id, limit ])
+    .then((reservations) => {
+      if (reservations && reservations.rows) {
+        console.log(reservations.rows);
+        return reservations.rows;
+      } else {
+        return null;
+      }
+    })
+    .catch((err) => console.log(err.message));
+};
 exports.getAllReservations = getAllReservations;
 
 /// Properties
